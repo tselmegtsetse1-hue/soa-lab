@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Нэвтрэх — SOA Лаб</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="index.html" class="logo">SOA Лаб</a>
+      <div class="nav-links">
+        <a href="login.html" class="active">Нэвтрэх</a>
+        <a href="register.html">Бүртгүүлэх</a>
+      </div>
+    </div>
+  </nav>
+  <div class="auth-container">
+    <div class="auth-wrapper">
+      <div class="auth-info">
+        <h1>SOA Лаб</h1>
+        <p>SOAP LoginUser — JWT localStorage-д хадгалагдана.</p>
+      </div>
+      <div class="auth-form-container">
+        <div id="message" class="message"></div>
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="username">Хэрэглэгчийн нэр</label>
+            <input type="text" id="username" required autocomplete="username" />
+          </div>
+          <div class="form-group">
+            <label for="password">Нууц үг</label>
+            <input type="password" id="password" required autocomplete="current-password" />
+          </div>
+          <button type="submit" class="btn btn-primary">Нэвтрэх</button>
+        </form>
+        <div class="divider"><span>эсвэл</span></div>
+        <p class="auth-link">Бүртгэлгүй юу? <a href="register.html">Бүртгүүлэх</a></p>
+      </div>
+    </div>
+  </div>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

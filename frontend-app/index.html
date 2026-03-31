@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SOA Лаб — Нүүр</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="index.html" class="logo">SOA Лаб</a>
+      <div class="nav-links">
+        <a href="login.html">Нэвтрэх</a>
+        <a href="register.html">Бүртгүүлэх</a>
+      </div>
+    </div>
+  </nav>
+  <div class="auth-container">
+    <div class="auth-wrapper" style="flex-direction: column; text-align: center">
+      <div class="auth-info" style="max-width: 600px">
+        <h1>SOA Лаборатори</h1>
+        <p style="margin-bottom: 24px">SOAP + JSON сервисүүдийн жишээ.</p>
+      </div>
+      <div class="auth-form-container" style="max-width: 600px">
+        <p style="color: var(--text-secondary); margin-bottom: 20px">
+          Эндээс эхлэнэ үү: бүртгэл эсвэл нэвтрэлт.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap">
+          <a href="register.html" class="btn btn-secondary">Бүртгүүлэх</a>
+          <a href="login.html" class="btn btn-outline">Нэвтрэх</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    if (localStorage.getItem('token')) window.location.href = 'profile.html';
+  </script>
+</body>
+</html>

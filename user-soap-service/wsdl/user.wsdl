@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="UserAuthService"
+             targetNamespace="http://localhost:4000/userauth"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:tns="http://localhost:4000/userauth"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <types>
+    <xsd:schema targetNamespace="http://localhost:4000/userauth">
+      <xsd:element name="RegisterUserRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="username" type="xsd:string"/>
+            <xsd:element name="password" type="xsd:string"/>
+            <xsd:element name="email" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="RegisterUserResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="success" type="xsd:boolean"/>
+            <xsd:element name="message" type="xsd:string"/>
+            <xsd:element name="userId" type="xsd:int" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="LoginUserRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="username" type="xsd:string"/>
+            <xsd:element name="password" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="LoginUserResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="success" type="xsd:boolean"/>
+            <xsd:element name="token" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="userId" type="xsd:int" minOccurs="0"/>
+            <xsd:element name="role" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="message" type="xsd:string" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="ValidateTokenRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="token" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="ValidateTokenResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="valid" type="xsd:boolean"/>
+            <xsd:element name="userId" type="xsd:int" minOccurs="0"/>
+            <xsd:element name="role" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="message" type="xsd:string" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </types>
+  <message name="RegisterUserInput"><part name="parameters" element="tns:RegisterUserRequest"/></message>
+  <message name="RegisterUserOutput"><part name="parameters" element="tns:RegisterUserResponse"/></message>
+  <message name="LoginUserInput"><part name="parameters" element="tns:LoginUserRequest"/></message>
+  <message name="LoginUserOutput"><part name="parameters" element="tns:LoginUserResponse"/></message>
+  <message name="ValidateTokenInput"><part name="parameters" element="tns:ValidateTokenRequest"/></message>
+  <message name="ValidateTokenOutput"><part name="parameters" element="tns:ValidateTokenResponse"/></message>
+  <portType name="UserAuthPortType">
+    <operation name="RegisterUser"><input message="tns:RegisterUserInput"/><output message="tns:RegisterUserOutput"/></operation>
+    <operation name="LoginUser"><input message="tns:LoginUserInput"/><output message="tns:LoginUserOutput"/></operation>
+    <operation name="ValidateToken"><input message="tns:ValidateTokenInput"/><output message="tns:ValidateTokenOutput"/></operation>
+  </portType>
+  <binding name="UserAuthBinding" type="tns:UserAuthPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="RegisterUser"><soap:operation soapAction="http://localhost:4000/userauth/RegisterUser"/><input><soap:body use="literal"/></input><output><soap:body use="literal"/></output></operation>
+    <operation name="LoginUser"><soap:operation soapAction="http://localhost:4000/userauth/LoginUser"/><input><soap:body use="literal"/></input><output><soap:body use="literal"/></output></operation>
+    <operation name="ValidateToken"><soap:operation soapAction="http://localhost:4000/userauth/ValidateToken"/><input><soap:body use="literal"/></input><output><soap:body use="literal"/></output></operation>
+  </binding>
+  <service name="UserAuthService">
+    <port name="UserAuthPort" binding="tns:UserAuthBinding">
+      <soap:address location="http://localhost:4000/wsdl"/>
+    </port>
+  </service>
+</definitions>

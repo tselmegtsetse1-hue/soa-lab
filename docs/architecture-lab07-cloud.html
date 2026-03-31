@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lab 07 — Cloud Architecture</title>
+  <style>
+    body { font-family: Segoe UI, sans-serif; background:#0f172a; color:#e2e8f0; padding:24px; }
+    .box { max-width:960px; margin:0 auto; background:#1e293b; border-radius:16px; padding:28px; }
+    h1 { text-align:center; margin-bottom:8px; }
+    p.sub { text-align:center; color:#94a3b8; margin-bottom:28px; }
+    .row { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:16px 0; }
+    .n { padding:14px 18px; border-radius:10px; font-weight:600; text-align:center; min-width:140px; }
+    .f { background:#059669; }
+    .j { background:#7c3aed; }
+    .s { background:#db2777; }
+    .fm { background:#ea580c; }
+    .db { background:#0284c7; }
+    .sp { background:#ca8a04; }
+    .arrow { text-align:center; font-size:22px; color:#64748b; margin:8px 0; }
+    ul { color:#cbd5e1; line-height:1.7; }
+    .note { background:#334155; padding:14px; border-radius:8px; margin-top:20px; font-size:14px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Lab 07 — Cloud &amp; Distributed File Management</h1>
+    <p class="sub">Lab 06 + DigitalOcean (App Platform / Droplet / Spaces)</p>
+
+    <div class="row">
+      <div class="n f">Browser<br><small>Static Site</small></div>
+    </div>
+    <div class="arrow">HTTPS</div>
+    <div class="row">
+      <div class="n j">JSON Service<br><small>REST / Profiles</small></div>
+      <div class="n s">SOAP Service<br><small>Auth / JWT</small></div>
+      <div class="n fm">File Manager<br><small>Upload + SOAP token</small></div>
+    </div>
+    <div class="arrow">Private network / Internet</div>
+    <div class="row">
+      <div class="n db">Managed DB<br><small>PostgreSQL</small></div>
+      <div class="n sp">Spaces<br><small>Object Storage (S3)</small></div>
+    </div>
+
+    <ul>
+      <li><strong>Frontend</strong> → JSON (profiles), SOAP (register/login), File Manager (avatar upload with Bearer token).</li>
+      <li><strong>JSON</strong> → Cloud DB (not localhost SQLite in production).</li>
+      <li><strong>SOAP</strong> → Auth DB; other services call <code>ValidateToken</code>.</li>
+      <li><strong>File Manager</strong> → Spaces (S3 API); keys only in env vars.</li>
+    </ul>
+
+    <div class="note">
+      Screenshot this page for your PDF deliverable. Replace component names with your actual DO resource names if required by your instructor.
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Профайл — SOA Лаб</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body id="profilePage">
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="profile.html" class="logo">SOA Лаб</a>
+      <div class="user-menu">
+        <div class="user-avatar-small" id="navAvatar">Х</div>
+        <button type="button" id="logoutBtn" class="logout-btn">Гарах</button>
+      </div>
+    </div>
+  </nav>
+  <div class="profile-container">
+    <div id="profileMessage" class="message"></div>
+    <div class="profile-header">
+      <div class="cover-photo"></div>
+      <div class="profile-info-header">
+        <div class="profile-avatar" id="avatarDisplay">Х</div>
+        <div class="profile-name-section">
+          <h1 class="profile-name" id="displayName">Уншиж байна...</h1>
+          <p class="profile-username">Профайл</p>
+        </div>
+      </div>
+    </div>
+    <div class="profile-content">
+      <div class="profile-sidebar">
+        <div class="card" id="profileDisplay">
+          <h3>Миний тухай</h3>
+          <div class="info-item"><span id="displayEmail">—</span></div>
+          <div class="info-item"><span id="displayPhone">—</span></div>
+          <p class="bio-text" id="displayBio">—</p>
+          <div class="profile-actions">
+            <button type="button" id="editBtn" class="btn btn-primary">Профайл засах</button>
+          </div>
+        </div>
+        <div class="card edit-form" id="profileEdit">
+          <h3>Профайл засах</h3>
+          <div class="form-group">
+            <label>Зураг upload (Lab07 — SOAP token шаардлагатай)</label>
+            <input type="file" id="avatarFile" accept="image/*" />
+            <button type="button" id="uploadAvatarBtn" class="btn btn-secondary" style="margin-top: 8px">Зураг оруулах</button>
+          </div>
+          <form id="editProfileForm">
+            <div class="form-group">
+              <label for="editName">Нэр</label>
+              <input type="text" id="editName" />
+            </div>
+            <div class="form-group">
+              <label for="editEmail">Имэйл</label>
+              <input type="email" id="editEmail" />
+            </div>
+            <div class="form-group">
+              <label for="editPhone">Утас</label>
+              <input type="tel" id="editPhone" />
+            </div>
+            <div class="form-group">
+              <label for="editBio">Танилцуулга</label>
+              <textarea id="editBio"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="editAvatar">Avatar URL</label>
+              <input type="url" id="editAvatar" placeholder="Upload-аас автоматаар орно" />
+            </div>
+            <div class="profile-actions">
+              <button type="submit" class="btn btn-primary">Хадгалах</button>
+              <button type="button" id="cancelEditBtn" class="btn btn-outline">Болих</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="profile-main">
+        <div class="card">
+          <h3>Тайлбар</h3>
+          <p style="color: var(--text-secondary)">
+            GET/PUT <code>/users/:id</code> нь JSON сервис — SOAP token шалгана.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
