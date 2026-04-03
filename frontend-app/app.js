@@ -246,12 +246,15 @@
       var data = await apiRequest('/users/' + uid, 'GET');
       displayProfile(data.profile);
     } catch (e) {
-      if (e.message && e.message.indexOf('not found') !== -1) {
+      if (e.message && e.message.toLowerCase().indexOf('not found') !== -1) {
         showMsg('profileMessage', MSG.welcome, 'success');
         document.getElementById('profileDisplay').style.display = 'none';
         document.getElementById('profileEdit').classList.add('show');
+        displayProfile({ name: '', email: '', bio: '', phone: '', avatar_url: '' });
       } else {
         showMsg('profileMessage', e.message, 'error');
+        var dn = document.getElementById('displayName');
+        if (dn) dn.textContent = MSG.noName;
       }
     }
   }
