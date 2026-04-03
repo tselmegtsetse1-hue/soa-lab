@@ -1,0 +1,9 @@
+{
+  "name": "soa-lab-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static HTML/CSS/JS — Lab 06/07 (no bundler)",
+  "scripts": {
+    "build": "node build.js"
+  }
+}
