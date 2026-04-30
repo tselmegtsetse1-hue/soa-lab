@@ -1,9 +1,10 @@
 (function () {
   const C = window.SOA_CONFIG || {};
+  const GW = C.GATEWAY_URL ? String(C.GATEWAY_URL).replace(/\/$/, '') : null;
   const CONFIG = {
-    JSON_API_URL: C.JSON_API_URL || 'http://localhost:3000',
-    SOAP_PROXY_URL: C.SOAP_PROXY_URL || 'http://localhost:4000',
-    FILE_API_URL: C.FILE_API_URL || 'http://localhost:3001'
+    JSON_API_URL: C.JSON_API_URL || (GW ? GW + '/api' : 'http://localhost:3000'),
+    SOAP_PROXY_URL: C.SOAP_PROXY_URL || (GW ? GW + '/api/soap' : 'http://localhost:4000'),
+    FILE_API_URL: C.FILE_API_URL || (GW ? GW + '/api/files' : 'http://localhost:3001')
   };
 
   const MSG = {

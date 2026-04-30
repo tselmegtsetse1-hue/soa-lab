@@ -14,13 +14,25 @@
 
 Local `auth.db` / `profile.db` нь зөвхөн таны PC дээр ажиллана. Cloud дээр **Managed Database** эсвэл **MongoDB Atlas (free)** ашиглана.
 
-**Орчны хувьсагч (жишээ PostgreSQL):**
+**Орчны хувьсагч (PostgreSQL — `user-json-service`)**
+
+Даалгаварт заасан нэрүүдтэй нийцүүлсэн (`process.env`):
+
+| Хувьсагч | Тайлбар |
+|----------|---------|
+| `DATABASE_URL` эсвэл `DB_URL` | DO Managed DB-ийн бүтэн connection string (зөвлөмж) |
+| `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME` | Тус тусад нь оруулах хувилбар |
+| `SOAP_WSDL_URL` | Cloud дээрх SOAP WSDL (жишээ `http://DROPLET_IP:4000/wsdl?wsdl`) |
+
+Жишээ:
 
 ```env
 DATABASE_URL=postgresql://user:pass@host:25060/defaultdb?sslmode=require
 ```
 
-JSON/SOAP сервисүүдийн кодыг cloud DB руу шилжүүлэхэд `pg` эсвэл `mongodb` драйвер ашиглаж, `process.env.DATABASE_URL`-аас уншина (кодонд нууц бичихгүй).
+**Local хөгжүүлэлт:** дээрхийг бөглөхгүй бол автоматаар `DB_PATH` (SQLite файл) ашиглана.
+
+`/health` хариу дээр `"database": "postgresql"` эсвэл `"sqlite"` гэж харагдана — **тайланд cloud DB холболтын нотолгоо** болгон screenshot авч болно.
 
 ---
 
