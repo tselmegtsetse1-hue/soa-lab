@@ -1,4 +1,6 @@
 require('dotenv').config();
+const http = require('http');
+const https = require('https');
 const express = require('express');
 const morgan = require('morgan');
 const Redis = require('ioredis');
@@ -21,7 +23,14 @@ redis.on('connect', () => console.log('✓ Redis connected:', REDIS_URL));
 redis.on('error', (e) => console.error('Redis error:', e.message));
 
 app.use(morgan('dev'));
-app.use(express.json());
+// Do not parse SOAP/XML (or multipart file) bodies as JSON — avoids 400 on POST /api/soap/*
+const jsonParser = express.json();
+app.use((req, res, next) => {
+    if (req.originalUrl.startsWith('/api/soap') || req.originalUrl.startsWith('/api/files')) {
+        return next();
+    }
+    jsonParser(req, res, next);
+});
 
 function cacheKey(req) {
     return `gw:${req.method}:${req.originalUrl}`;
@@ -101,15 +110,58 @@ const usersProxy = createProxyMiddleware({
     }
 });
 
-const soapProxy = createProxyMiddleware({
-    target: SOAP_SERVICE_URL,
-    changeOrigin: true,
-    pathRewrite: { '^/api/soap': '' },
-    onError: (err, req, res) => {
-        console.error('SOAP proxy error:', err.message);
-        res.status(502).send('SOAP service unavailable');
+// Buffer XML body and forward manually — http-proxy-middleware can forward an empty
+// body in some deployments, which makes node-soap respond with HTTP 400.
+const soapRawBody = express.raw({ type: () => true, limit: '5mb' });
+
+function forwardSoapRequest(req, res) {
+    const tail = (req.originalUrl || '').startsWith('/api/soap')
+        ? req.originalUrl.slice('/api/soap'.length) || '/'
+        : req.originalUrl || '/';
+    let dest;
+    try {
+        const base = SOAP_SERVICE_URL.endsWith('/') ? SOAP_SERVICE_URL : `${SOAP_SERVICE_URL}/`;
+        dest = new URL(tail.startsWith('/') ? tail.slice(1) : tail, base);
+    } catch (e) {
+        console.error('SOAP forward URL error:', e.message);
+        return res.status(500).send('SOAP forward URL invalid');
     }
-});
+
+    const body = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+    const headers = { ...req.headers };
+    delete headers.connection;
+    delete headers.trailer;
+    delete headers['transfer-encoding'];
+    headers.host = dest.host;
+    headers['content-length'] = String(Buffer.byteLength(body));
+
+    const isHttps = dest.protocol === 'https:';
+    const lib = isHttps ? https : http;
+    const opts = {
+        protocol: dest.protocol,
+        hostname: dest.hostname,
+        port: dest.port || (isHttps ? 443 : 80),
+        path: dest.pathname + dest.search,
+        method: req.method,
+        headers
+    };
+
+    const upstream = lib.request(opts, (upstreamRes) => {
+        const outHeaders = { ...upstreamRes.headers };
+        delete outHeaders['transfer-encoding'];
+        res.writeHead(upstreamRes.statusCode || 502, outHeaders);
+        upstreamRes.pipe(res);
+    });
+
+    upstream.on('error', (err) => {
+        console.error('SOAP forward error:', err.message);
+        if (!res.headersSent) {
+            res.status(502).send('SOAP service unavailable');
+        }
+    });
+
+    upstream.end(body.length ? body : undefined);
+}
 
 const filesProxy = createProxyMiddleware({
     target: FILE_SERVICE_URL,
@@ -137,7 +189,7 @@ app.get('/health', async (req, res) => {
 });
 
 app.use('/api/users', cacheGet, usersProxy);
-app.use('/api/soap', soapProxy);
+app.use('/api/soap', soapRawBody, forwardSoapRequest);
 app.use('/api/files', filesProxy);
 
 app.use((req, res) => {
