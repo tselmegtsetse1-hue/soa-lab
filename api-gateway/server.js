@@ -3,6 +3,7 @@ const http = require('http');
 const https = require('https');
 const express = require('express');
 const morgan = require('morgan');
+const getRawBody = require('raw-body');
 const Redis = require('ioredis');
 const { createProxyMiddleware, responseInterceptor } = require('http-proxy-middleware');
 
@@ -110,8 +111,7 @@ const usersProxy = createProxyMiddleware({
     }
 });
 
-// Buffer SOAP body manually. express.raw() skips when type-is decides there is “no body”
-// (e.g. missing Content-Length through some proxies), leaving req.body as {} → empty forward → 400.
+// Read SOAP body reliably (handles chunked uploads, avoids empty-body forwarding → SOAP 400).
 const SOAP_BODY_LIMIT = parseInt(process.env.SOAP_BODY_LIMIT_BYTES || String(5 * 1024 * 1024), 10);
 
 function bufferSoapBody(req, res, next) {
@@ -119,24 +119,19 @@ function bufferSoapBody(req, res, next) {
         req.soapPayload = Buffer.alloc(0);
         return next();
     }
-    const chunks = [];
-    let total = 0;
-    req.on('data', (chunk) => {
-        total += chunk.length;
-        if (total > SOAP_BODY_LIMIT) {
-            req.destroy();
-            try {
-                if (!res.headersSent) res.status(413).send('SOAP body too large');
-            } catch (_) {}
-            return;
-        }
-        chunks.push(chunk);
-    });
-    req.on('end', () => {
-        req.soapPayload = chunks.length ? Buffer.concat(chunks) : Buffer.alloc(0);
-        next();
-    });
-    req.on('error', next);
+    const hdr = req.headers['content-length'];
+    const declaredLen =
+        hdr != null && !Number.isNaN(parseInt(hdr, 10)) ? parseInt(hdr, 10) : undefined;
+    getRawBody(req, { limit: SOAP_BODY_LIMIT, length: declaredLen })
+        .then((buf) => {
+            req.soapPayload = buf;
+            next();
+        })
+        .catch((err) => {
+            if (err.statusCode === 413) return res.status(413).send('SOAP body too large');
+            console.error('SOAP body read:', err.message);
+            return res.status(400).send('Invalid SOAP body');
+        });
 }
 
 function forwardSoapRequest(req, res) {
