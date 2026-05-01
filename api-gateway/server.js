@@ -110,9 +110,34 @@ const usersProxy = createProxyMiddleware({
     }
 });
 
-// Buffer XML body and forward manually — http-proxy-middleware can forward an empty
-// body in some deployments, which makes node-soap respond with HTTP 400.
-const soapRawBody = express.raw({ type: () => true, limit: '5mb' });
+// Buffer SOAP body manually. express.raw() skips when type-is decides there is “no body”
+// (e.g. missing Content-Length through some proxies), leaving req.body as {} → empty forward → 400.
+const SOAP_BODY_LIMIT = parseInt(process.env.SOAP_BODY_LIMIT_BYTES || String(5 * 1024 * 1024), 10);
+
+function bufferSoapBody(req, res, next) {
+    if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+        req.soapPayload = Buffer.alloc(0);
+        return next();
+    }
+    const chunks = [];
+    let total = 0;
+    req.on('data', (chunk) => {
+        total += chunk.length;
+        if (total > SOAP_BODY_LIMIT) {
+            req.destroy();
+            try {
+                if (!res.headersSent) res.status(413).send('SOAP body too large');
+            } catch (_) {}
+            return;
+        }
+        chunks.push(chunk);
+    });
+    req.on('end', () => {
+        req.soapPayload = chunks.length ? Buffer.concat(chunks) : Buffer.alloc(0);
+        next();
+    });
+    req.on('error', next);
+}
 
 function forwardSoapRequest(req, res) {
     const tail = (req.originalUrl || '').startsWith('/api/soap')
@@ -127,20 +152,22 @@ function forwardSoapRequest(req, res) {
         return res.status(500).send('SOAP forward URL invalid');
     }
 
-    const body = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+    const body = Buffer.isBuffer(req.soapPayload) ? req.soapPayload : Buffer.alloc(0);
+
     const headers = { ...req.headers };
     delete headers.connection;
     delete headers.trailer;
     delete headers['transfer-encoding'];
+    delete headers.upgrade;
     headers.host = dest.host;
     headers['content-length'] = String(Buffer.byteLength(body));
 
     const isHttps = dest.protocol === 'https:';
     const lib = isHttps ? https : http;
+    const destPortNum = dest.port ? Number(dest.port) : isHttps ? 443 : 80;
     const opts = {
-        protocol: dest.protocol,
         hostname: dest.hostname,
-        port: dest.port || (isHttps ? 443 : 80),
+        port: destPortNum,
         path: dest.pathname + dest.search,
         method: req.method,
         headers
@@ -189,7 +216,7 @@ app.get('/health', async (req, res) => {
 });
 
 app.use('/api/users', cacheGet, usersProxy);
-app.use('/api/soap', soapRawBody, forwardSoapRequest);
+app.use('/api/soap', bufferSoapBody, forwardSoapRequest);
 app.use('/api/files', filesProxy);
 
 app.use((req, res) => {
